@@ -2,8 +2,31 @@ from view.display import Display
 import pandas as pd
 
 class Input:
+    """
+    A class to manage user inputs and provide interactive menus and prompts.
+
+    This class provides static methods to interact with the user, offering
+    options, capturing, and validating inputs for various functionalities
+    like choosing options from the main menu and entering details for a travel record.
+
+    Methods
+    -------
+    get_user_choice():
+        Displays the main menu and validates the user's choice of action.
+    get_record_details():
+        Captures and validates the user's input for creating/editing a travel record.
+    """
+
     @staticmethod
     def get_user_choice():
+        """
+        Displays the main menu and validates the user's choice of action.
+
+        Returns
+        -------
+        choice : str
+            A string representing the user's validated choice from the main menu.
+        """
         print("\nOptions:")
         print("1. Reload data from CSV")
         print("2. Save data to a new CSV")
@@ -22,8 +45,32 @@ class Input:
 
     @staticmethod
     def get_record_details():
+        """
+        Captures and validates the user's input for creating/editing a travel record.
+
+        Utilizes helper functions to validate float and date inputs and ensures
+        that the user provides inputs in the expected format.
+
+        Returns
+        -------
+        details : dict
+            A dictionary containing validated inputs for a travel record.
+        """
         # Validate float inputs with a function
         def get_float_input(prompt):
+            """
+            Validates and captures a float input from the user.
+
+            Parameters
+            ----------
+            prompt : str
+                The message displayed to the user when requesting input.
+
+            Returns
+            -------
+            float
+                A validated float value provided by the user.
+            """
             while True:
                 try:
                     return float(input(prompt))

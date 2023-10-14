@@ -6,6 +6,43 @@ import pandas as pd
 import os
 
 class MainController:
+    """
+    A class to manage the main control flow of the Travel Records Management System.
+
+    This class orchestrates the overall functionality of the application by
+    interacting with data management, display, and input handling components.
+    It provides methods to load and save data, display records, create, edit,
+    and delete records, and manage the main user interaction loop.
+
+    Attributes
+    ----------
+    data_manager : DataManager
+        An instance of DataManager to handle data loading and saving.
+    display : Display
+        An instance of Display to manage the display of data and messages.
+    input : Input
+        An instance of Input to handle user inputs and interactions.
+    records : list
+        A list to store the travel records in memory.
+
+    Methods
+    -------
+    run():
+        Manages the main interaction loop, capturing user choices and executing corresponding actions.
+    load_data_from_csv():
+        Loads travel records from a CSV file into memory.
+    save_data_to_csv():
+        Saves the travel records from memory into a CSV file.
+    display_records():
+        Displays travel records to the user, offering options to display all or a single record.
+    create_record():
+        Captures user input to create a new travel record.
+    edit_record():
+        Captures user input to edit an existing travel record.
+    delete_record():
+        Deletes a travel record based on user input.
+    """
+
     def __init__(self):
         self.data_manager = DataManager()
         self.display = Display()
@@ -13,6 +50,12 @@ class MainController:
         self.records = []
 
     def run(self):
+        """
+        Manages the main interaction loop, capturing user choices and executing corresponding actions.
+
+        The method provides a continuous loop, presenting the user with choices
+        and executing the chosen action until the user decides to exit the application.
+        """
         self.load_data_from_csv()
         while True:
             self.display.display_message("Welcome to the Travel Records Management System!")
@@ -39,6 +82,11 @@ class MainController:
             os.system('cls' if os.name == 'nt' else 'clear')  # Clearing the screen
 
     def load_data_from_csv(self):
+        """
+        Loads travel records from a CSV file into memory.
+
+        Utilizes the data_manager to read data from the CSV file and handle possible exceptions.
+        """
         try:
             self.records = self.data_manager.read_csv_data()
             self.display.display_message("Data loaded successfully from CSV.")
@@ -46,6 +94,11 @@ class MainController:
             self.display.display_error_message(str(e))
 
     def save_data_to_csv(self):
+        """
+        Saves the travel records from memory into a CSV file.
+
+        Converts the records into a DataFrame and saves them into a CSV file, handling possible exceptions.
+        """
         try:
             data = {
                 'ref_number': [record.ref_number for record in self.records],
