@@ -36,10 +36,16 @@ class Display:
         print(Fore.CYAN + "Travel Records Table")
         table = [
             [
-                record.ref_number, record.title_en, record.purpose_en,
-                record.start_date, record.end_date, f"${record.airfare:.2f}",
-                f"${record.other_transport:.2f}", f"${record.lodging:.2f}",
-                f"${record.meals:.2f}", f"${record.other_expenses:.2f}",
+                record.ref_number[:15],  
+                record.title_en[:30],
+                record.purpose_en[:60],
+                record.start_date,
+                record.end_date,
+                f"${record.airfare:.2f}",
+                f"${record.other_transport:.2f}",
+                f"${record.lodging:.2f}",
+                f"${record.meals:.2f}",
+                f"${record.other_expenses:.2f}",
                 f"${record.total:.2f}"
             ]
             for record in records
@@ -47,7 +53,7 @@ class Display:
         headers = ["Ref Number", "Title", "Purpose", "Start Date", "End Date",
                     "Airfare", "Other Transport", "Lodging", "Meals", "Other Expenses", "Total"]
 
-        print(tabulate(table, headers=headers, tablefmt="fancy_grid"))
+        print(tabulate(table, headers=headers, tablefmt="grid"))
 
     def display_single_record(self, record):
         """

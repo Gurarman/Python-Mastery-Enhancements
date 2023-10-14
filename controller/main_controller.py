@@ -89,7 +89,7 @@ class MainController:
         """
         try:
             self.records = self.data_manager.read_csv_data()
-            self.display.display_message("Data loaded successfully from CSV.")
+            self.display.display_message("Data re7loaded successfully from CSV.")
         except Exception as e:
             self.display.display_error_message(str(e))
 

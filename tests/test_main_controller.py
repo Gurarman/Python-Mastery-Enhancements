@@ -1,4 +1,5 @@
 import unittest
+import sys
 from model.record import Record
 from controller.main_controller import MainController
 
@@ -26,7 +27,9 @@ class TestMainController(unittest.TestCase):
         the necessary objects for testing. Specifically, it creates an instance
         of MainController and assigns it to the instance variable self.controller.
         """
+        sys.stderr.write("Tests run by: Gurarman Singh")
         self.controller = MainController()
+        
 
     def test_add_new_record(self):
         """
@@ -71,4 +74,5 @@ if __name__ == '__main__':
 
     When the script is run as the main module, it runs the tests defined in TestMainController.
     """
+    
     unittest.main()
