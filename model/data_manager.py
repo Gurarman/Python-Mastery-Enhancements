@@ -1,73 +1,108 @@
-import pandas as pd
 from model.record import Record
+from pymongo import MongoClient
 
 class DataManager:
     """
-    A class used to manage data operations related to travel records.
+    A class used to manage data operations related to travel records using MongoDB.
 
-    This class provides functionality to read travel records from a CSV file
-    and convert them into a list of Record objects.
+    This class provides functionality to read and manipulate travel records stored in a MongoDB database.
+    It allows reading data from the database, inserting new records, updating existing records, 
+    and deleting records.
 
     Attributes
     ----------
     MAX_RECORDS : int
-        The maximum number of records to be read from the CSV file.
-    CSV_FILE_NAME : str
-        The name of the CSV file containing the travel records.
+        The maximum number of records to be read from the database.
+    client : MongoClient
+        MongoDB client for database interaction.
+    db : Database
+        MongoDB database instance.
+    collection : Collection
+        MongoDB collection to store travel records.
 
     Methods
     -------
-    read_csv_data():
-        Reads the travel data from the CSV file and returns a list of Record objects.
+    read_data_from_db():
+        Reads travel records from MongoDB and returns them as a list of Record objects.
+    insert_record(record):
+        Inserts a new travel record into the MongoDB collection.
+    update_record(ref_number, updated_details):
+        Updates an existing travel record in the MongoDB collection.
+    delete_record(ref_number):
+        Deletes a travel record from the MongoDB collection based on its reference number.
+    save_records_to_db(records):
+        Saves multiple travel records to the MongoDB collection.
     """
 
-    MAX_RECORDS = 100
-    CSV_FILE_NAME = 'data/travelq.csv'
+    MAX_RECORDS = 100;
+    
+    def __init__(self):
+        # Initialize MongoDB Client
+        self.client = MongoClient('localhost', 27017)  
+        self.db = self.client['CST8333']  
+        self.collection = self.db['records']  
 
-    @staticmethod
-    def read_csv_data():
+    def read_data_from_db(self):
         """
-        Reads the travel data from the CSV file and converts it into a list of Record objects.
+        Reads the travel data from MongoDB and converts it into a list of Record objects.
 
-        This method reads the travel data from the CSV file specified by `CSV_FILE_NAME`,
-        converts each record into a Record object, and returns a list of these objects.
-        It reads a maximum of `MAX_RECORDS` records from the file.
+        This method queries the MongoDB database to retrieve travel records and converts them 
+        into a list of Record objects. It limits the number of records retrieved to MAX_RECORDS.
 
         Returns
         -------
         list of Record
             A list containing the travel records as Record objects.
-
-        Raises
-        ------
-        FileNotFoundError
-            If the specified CSV file is not found.
-        ValueError
-            If the CSV file is empty.
-        Exception
-            If an error occurs while reading the CSV file.
         """
-        try:
-            df = pd.read_csv(DataManager.CSV_FILE_NAME)
-            records = [
-                Record(
-                    row['ref_number'],
-                    row['title_en'],
-                    row['purpose_en'],
-                    row['start_date'],
-                    row['end_date'],
-                    row['airfare'],
-                    row['other_transport'],
-                    row['lodging'],
-                    row['meals'],
-                    row['other_expenses'],
-                    row['total'])
-                for _, row in df.head(DataManager.MAX_RECORDS).iterrows()
-            ]
-            return records
-        except FileNotFoundError:
-            raise FileNotFoundError(f"File {DataManager.CSV_FILE_NAME} not found!")
-        except pd.errors.EmptyDataError:
-            raise ValueError(f"File {DataManager.CSV_FILE_NAME} is empty!")
-        except Exception as e:
-            raise Exception(f"Error reading the CSV file: {e}")
+        mongo_records = self.collection.find().limit(self.MAX_RECORDS)
+        allowed_keys = {'ref_number', 'title_en', 'purpose_en', 'start_date', 'end_date', 
+                    'airfare', 'other_transport', 'lodging', 'meals', 'other_expenses', 'total'}
+        records = [Record(**{k: v for k, v in record.items() if k in allowed_keys}) for record in mongo_records]
+        return records
+    
+    def insert_record(self, record):
+        """
+        Inserts a new travel record into the MongoDB collection.
+
+        Parameters
+        ----------
+        record : Record
+            The Record object to be inserted into the database.
+        """
+        self.collection.insert_one(record.__dict__)
+
+    def update_record(self, ref_number, updated_details):
+        """
+        Updates an existing travel record in the MongoDB collection.
+
+        Parameters
+        ----------
+        ref_number : str
+            The reference number of the travel record to be updated.
+        updated_details : dict
+            A dictionary containing the updated details of the record.
+        """
+        self.collection.update_one({'ref_number': ref_number}, {'$set': updated_details}, upsert=True)
+
+    def delete_record(self, ref_number):
+        """
+        Deletes a travel record from the MongoDB collection based on its reference number.
+
+        Parameters
+        ----------
+        ref_number : str
+            The reference number of the travel record to be deleted.
+        """
+        self.collection.delete_one({'ref_number': ref_number})
+
+    def save_records_to_db(self, records):
+        """
+        Saves multiple travel records to the MongoDB collection.
+
+        Parameters
+        ----------
+        records : list of Record
+            A list of Record objects to be saved to the database.
+        """
+        for record in records:
+            self.update_record(record.ref_number, record.__dict__)

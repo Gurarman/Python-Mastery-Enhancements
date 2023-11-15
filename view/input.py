@@ -28,8 +28,8 @@ class Input:
             A string representing the user's validated choice from the main menu.
         """
         print("\nOptions:")
-        print("1. Reload data from CSV")
-        print("2. Save data to a new CSV")
+        print("1. Reload data from Database")
+        print("2. Save data to a new Database")
         print("3. Display records")
         print("4. Create a new record")
         print("5. Edit a record")
