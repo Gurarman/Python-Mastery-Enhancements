@@ -1,5 +1,7 @@
 from model.record import Record
+import pymongo
 from pymongo import MongoClient
+
 
 class DataManager:
     """
@@ -34,13 +36,13 @@ class DataManager:
         Saves multiple travel records to the MongoDB collection.
     """
 
-    MAX_RECORDS = 100;
-    
+    MAX_RECORDS = 100
+
     def __init__(self):
         # Initialize MongoDB Client
-        self.client = MongoClient('localhost', 27017)  
-        self.db = self.client['CST8333']  
-        self.collection = self.db['records']  
+        self.client = MongoClient('localhost', 27017)
+        self.db = self.client['CST8333']
+        self.collection = self.db['records']
 
     def read_data_from_db(self):
         """
@@ -55,11 +57,12 @@ class DataManager:
             A list containing the travel records as Record objects.
         """
         mongo_records = self.collection.find().limit(self.MAX_RECORDS)
-        allowed_keys = {'ref_number', 'title_en', 'purpose_en', 'start_date', 'end_date', 
-                    'airfare', 'other_transport', 'lodging', 'meals', 'other_expenses', 'total'}
-        records = [Record(**{k: v for k, v in record.items() if k in allowed_keys}) for record in mongo_records]
+        allowed_keys = {'ref_number', 'title_en', 'purpose_en', 'start_date', 'end_date',
+                        'airfare', 'other_transport', 'lodging', 'meals', 'other_expenses', 'total'}
+        records = [Record(**{k: v for k, v in record.items()
+                            if k in allowed_keys}) for record in mongo_records]
         return records
-    
+
     def insert_record(self, record):
         """
         Inserts a new travel record into the MongoDB collection.
@@ -82,7 +85,8 @@ class DataManager:
         updated_details : dict
             A dictionary containing the updated details of the record.
         """
-        self.collection.update_one({'ref_number': ref_number}, {'$set': updated_details}, upsert=True)
+        self.collection.update_one({'ref_number': ref_number}, {
+                                    '$set': updated_details}, upsert=True)
 
     def delete_record(self, ref_number):
         """
@@ -106,3 +110,26 @@ class DataManager:
         """
         for record in records:
             self.update_record(record.ref_number, record.__dict__)
+
+    def get_sorted_records(self, sort_criteria):
+        '''
+        Fetches and sorts travel records from the database based on given criteria.
+
+        Parameters
+        ----------
+        sort_criteria : list of tuples
+            Each tuple contains a column name and a sorting order ('asc' or 'desc').
+
+        Returns
+        -------
+        list of Record
+            Sorted list of travel records.
+        '''
+        query = {}
+        sort_order = [(field, pymongo.ASCENDING if order == 'asc' else pymongo.DESCENDING)
+                        for field, order in sort_criteria]
+
+        records = self.collection.find(query).sort(
+            sort_order).limit(self.MAX_RECORDS)
+
+        return [Record(**data) for data in records]

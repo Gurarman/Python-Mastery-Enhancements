@@ -74,6 +74,8 @@ class MainController:
             elif user_choice == "6":
                 self.delete_record()
             elif user_choice == "7":
+                self.sort_records()
+            elif user_choice == "8":
                 self.display.display_message(
                     "Exiting the application. Goodbye!")
                 break
@@ -167,3 +169,13 @@ class MainController:
             self.display.display_message("Record deleted successfully.")
         except Exception as e:
             self.display.display_error_message(f"Error deleting record: {str(e)}")
+            
+    def sort_records(self):
+        '''
+        Handles the sorting of travel records based on user input.
+
+        Prompts the user for sorting criteria and retrieves sorted records from the database.
+        '''
+        sort_criteria = self.input.get_sort_criteria()
+        sorted_records = self.data_manager.get_sorted_records(sort_criteria)
+        self.display.display_records(sorted_records)

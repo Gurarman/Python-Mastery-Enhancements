@@ -34,14 +34,15 @@ class Input:
         print("4. Create a new record")
         print("5. Edit a record")
         print("6. Delete a record")
-        print("7. Exit")
+        print("7. Sort the records")
+        print("8. Exit")
         Display.display_creator_name()
         while True:
             choice = input("Enter your choice: ")
-            if choice.isdigit() and 1 <= int(choice) <= 7:
+            if choice.isdigit() and 1 <= int(choice) <= 8:
                 return choice
             else:
-                print("Invalid choice. Please enter a number between 1 and 7.")
+                print("Invalid choice. Please enter a number between 1 and 8.")
 
     @staticmethod
     def get_record_details():
@@ -106,3 +107,28 @@ class Input:
                 print("Invalid date format. Please use YYYY-MM-DD.")
         
         return details
+    
+    
+    def get_sort_criteria(self):
+        '''
+        Prompts the user to enter sorting criteria for the records.
+
+        Returns
+        -------
+        list of tuples
+            Each tuple contains a column name and a sorting order ('asc' or 'desc').
+        '''
+        criteria = []
+        while True:
+            column = input("Enter the column name to sort by (or 'done' to finish): ")
+            if column.lower() == 'done':
+                break
+
+            order = input("Enter the sorting order ('asc' for ascending, 'desc' for descending): ")
+            if order not in ['asc', 'desc']:
+                print("Invalid sorting order. Please enter 'asc' or 'desc'.")
+                continue
+
+            criteria.append((column, order))
+        
+        return criteria
