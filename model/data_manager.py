@@ -132,4 +132,13 @@ class DataManager:
         records = self.collection.find(query).sort(
             sort_order).limit(self.MAX_RECORDS)
 
-        return [Record(**data) for data in records]
+        # Fetch the field names expected by the Record class
+        valid_fields = vars(Record()).keys()
+
+        # Filter the fetched records to include only the valid fields
+        filtered_records = [
+            {k: v for k, v in data.items() if k in valid_fields}
+            for data in records
+        ]
+
+        return [Record(**record_data) for record_data in filtered_records]
