@@ -1,6 +1,8 @@
 from model.record import Record
 import pymongo
 from pymongo import MongoClient
+from operator import attrgetter
+from datetime import datetime
 
 
 class DataManager:
@@ -112,8 +114,8 @@ class DataManager:
             self.update_record(record.ref_number, record.__dict__)
 
     def get_sorted_records(self, sort_criteria):
-        '''
-        Fetches and sorts travel records from the database based on given criteria.
+        """
+        Fetches travel records from the database and sorts them in memory based on given criteria.
 
         Parameters
         ----------
@@ -124,21 +126,33 @@ class DataManager:
         -------
         list of Record
             Sorted list of travel records.
-        '''
-        query = {}
-        sort_order = [(field, pymongo.ASCENDING if order == 'asc' else pymongo.DESCENDING)
-                        for field, order in sort_criteria]
+        """
+        # Fetch records from MongoDB
+        records = list(self.collection.find().limit(self.MAX_RECORDS))
 
-        records = self.collection.find(query).sort(
-            sort_order).limit(self.MAX_RECORDS)
+        # Convert to Record objects
+        record_objects = []
+        for record in records:
+            # Map MongoDB fields to Record class constructor arguments
+            record_args = {
+                'ref_number': record.get('ref_number'),
+                'title_en': record.get('title_en'),
+                'purpose_en': record.get('purpose_en'),
+                'start_date': record.get('start_date').strftime('%Y-%m-%d') if record.get('start_date') else None,
+                'end_date': record.get('end_date').strftime('%Y-%m-%d') if record.get('end_date') else None,
+                'airfare': record.get('airfare', 0.0),
+                'other_transport': record.get('other_transport', 0.0),
+                'lodging': record.get('lodging', 0.0),
+                'meals': record.get('meals', 0.0),
+                'other_expenses': record.get('other_expenses', 0.0),
+                'total': record.get('total', 0.0),
+            }
+            record_objects.append(Record(**record_args))
 
-        # Fetch the field names expected by the Record class
-        valid_fields = vars(Record()).keys()
 
-        # Filter the fetched records to include only the valid fields
-        filtered_records = [
-            {k: v for k, v in data.items() if k in valid_fields}
-            for data in records
-        ]
+        # Sort records in memory
+        for field, order in sort_criteria:
+            reverse = order == 'desc'
+            record_objects = sorted(record_objects, key=attrgetter(field), reverse=reverse)
 
-        return [Record(**record_data) for record_data in filtered_records]
+        return record_objects
